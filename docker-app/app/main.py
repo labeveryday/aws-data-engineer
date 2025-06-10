@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import sys
+from config import DOMAINS, LABS, STUDY_GUIDE_PATH, LABS_PATH
 
 # Set page configuration
 st.set_page_config(
@@ -30,35 +31,37 @@ def sidebar_navigation():
         if st.button("Introduction", use_container_width=True):
             st.session_state.current_page = "intro"
             st.rerun()
-        if st.button("Domain 1: Data Ingestion", use_container_width=True):
-            st.session_state.current_page = "domain1"
-            st.rerun()
-        if st.button("Domain 2: Storage & Management", use_container_width=True):
-            st.session_state.current_page = "domain2"
-            st.rerun()
-        if st.button("Domain 3: Security & Access", use_container_width=True):
-            st.session_state.current_page = "domain3"
-            st.rerun()
-        if st.button("Domain 4: Operations & Optimization", use_container_width=True):
-            st.session_state.current_page = "domain4"
-            st.rerun()
+            
+        # Add domain buttons
+        for domain_key, domain_info in DOMAINS.items():
+            if st.button(f"Domain {domain_key[-1]}: {domain_info['title']}", use_container_width=True):
+                st.session_state.current_page = domain_key
+                st.rerun()
+                
         if st.button("Exam Preparation Tips", use_container_width=True):
             st.session_state.current_page = "exam_tips"
             st.rerun()
         
-        st.subheader("Labs")
-        # Data Ingestion Labs
-        if st.button("Lab 1.1: Batch Ingestion", use_container_width=True):
-            st.session_state.current_page = "lab1_1"
-            st.rerun()
-        if st.button("Lab 1.2: Streaming Data", use_container_width=True):
-            st.session_state.current_page = "lab1_2"
-            st.rerun()
-        if st.button("Lab 1.3: Database Migration", use_container_width=True):
-            st.session_state.current_page = "lab1_3"
-            st.rerun()
+        # Group labs by domain
+        domain_labs = {}
+        for lab_key, lab_info in LABS.items():
+            domain = lab_info["domain"]
+            if domain not in domain_labs:
+                domain_labs[domain] = []
+            domain_labs[domain].append((lab_key, lab_info))
         
-        # Add more labs as needed...
+        # Display labs grouped by domain
+        st.subheader("Labs")
+        for domain_key in sorted(domain_labs.keys()):
+            domain_num = domain_key[-1]
+            st.markdown(f"**Domain {domain_num} Labs:**")
+            
+            for lab_key, lab_info in sorted(domain_labs[domain_key]):
+                if st.button(f"{lab_key.upper()}: {lab_info['title']}", use_container_width=True, key=lab_key):
+                    st.session_state.current_page = lab_key
+                    st.rerun()
+            
+            st.markdown("---")
 
 # Render markdown content
 def render_markdown(file_path):
@@ -68,6 +71,9 @@ def render_markdown(file_path):
             st.markdown(content)
     except Exception as e:
         st.error(f"Error loading content: {e}")
+        st.error(f"File path: {file_path}")
+        st.error(f"Current working directory: {os.getcwd()}")
+        st.error(f"Files in directory: {os.listdir(os.path.dirname(file_path) if os.path.dirname(file_path) else '.')}")
 
 # Main content area
 def main_content():
@@ -96,41 +102,26 @@ def main_content():
         
     elif st.session_state.current_page == "intro":
         st.title("Introduction")
-        render_markdown("content/study-guide/00-introduction.md")
+        render_markdown(f"{STUDY_GUIDE_PATH}/00-introduction.md")
         
-    elif st.session_state.current_page == "domain1":
-        st.title("Domain 1: Data Ingestion and Transformation")
-        render_markdown("content/study-guide/01-data-ingestion-transformation.md")
-        
-    elif st.session_state.current_page == "domain2":
-        st.title("Domain 2: Storage and Data Management")
-        render_markdown("content/study-guide/02-storage-data-management.md")
-        
-    elif st.session_state.current_page == "domain3":
-        st.title("Domain 3: Data Security and Access Control")
-        render_markdown("content/study-guide/03-data-security-access-control.md")
-        
-    elif st.session_state.current_page == "domain4":
-        st.title("Domain 4: Data Operations and Optimization")
-        render_markdown("content/study-guide/04-data-operations-optimization.md")
+    # Handle domain pages
+    elif st.session_state.current_page in DOMAINS:
+        domain_info = DOMAINS[st.session_state.current_page]
+        st.title(f"Domain {st.session_state.current_page[-1]}: {domain_info['title']}")
+        render_markdown(f"{STUDY_GUIDE_PATH}/{domain_info['file']}")
         
     elif st.session_state.current_page == "exam_tips":
         st.title("Exam Preparation Tips")
-        render_markdown("content/study-guide/05-exam-preparation-tips.md")
+        render_markdown(f"{STUDY_GUIDE_PATH}/05-exam-preparation-tips.md")
         
-    elif st.session_state.current_page == "lab1_1":
-        st.title("Lab 1.1: Batch Data Ingestion with AWS Glue")
-        render_markdown("content/labs/data-ingestion/lab-1.1-batch-ingestion-glue.md")
-        
-    elif st.session_state.current_page == "lab1_2":
-        st.title("Lab 1.2: Streaming Data with Amazon Kinesis")
-        render_markdown("content/labs/data-ingestion/lab-1.2-streaming-kinesis.md")
-        
-    elif st.session_state.current_page == "lab1_3":
-        st.title("Lab 1.3: Database Migration with AWS DMS")
-        render_markdown("content/labs/data-ingestion/lab-1.3-database-migration-dms.md")
-        
-    # Add other pages as needed...
+    # Handle lab pages
+    elif st.session_state.current_page in LABS:
+        lab_info = LABS[st.session_state.current_page]
+        st.title(f"{st.session_state.current_page.upper()}: {lab_info['title']}")
+        render_markdown(f"{LABS_PATH}/{lab_info['file']}")
+    
+    else:
+        st.error(f"Page not found: {st.session_state.current_page}")
 
 # Main app layout
 sidebar_navigation()

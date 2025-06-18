@@ -10,7 +10,7 @@ This application provides a structured learning environment for AWS Certified Da
 - **Hands-on Labs**: Follow step-by-step instructions for practical experience with AWS data services
 - **Progress Tracking**: Monitor your advancement through the course materials
 - **Visual Dashboard**: See your progress and continue where you left off
-- **Coming Soon**: Claude AI assistant integration for interactive Q&A and guidance
+- **AI Assistant**: Multi-agent system with Claude integration for interactive Q&A and specialized guidance
 
 ## How to Use the App
 
@@ -48,18 +48,20 @@ This application provides a structured learning environment for AWS Certified Da
 The application is being developed in phases:
 
 - **Phase 1**: ✅ Basic setup with Docker and content navigation
-- **Phase 2**: ✅ Core Streamlit app with progress tracking
-- **Phase 3**: 🔄 Claude on Amazon Bedrock integration (In Progress)
-- **Phase 4**: ⏳ Interactive lab features (Planned)
-- **Phase 5**: ⏳ Testing and refinement (Planned)
-- **Phase 6**: ⏳ Documentation and deployment instructions (Planned)
+- **Phase 2**: ✅ Core Streamlit app with progress tracking and multi-agent AI system
+- **Phase 3**: ✅ Claude on Amazon Bedrock integration with specialist agents (Completed)
+- **Phase 4**: 🔄 Frontend/Backend separation with CloudScape UI (In Progress)
+- **Phase 5**: ⏳ Interactive lab features (Planned)
+- **Phase 6**: ⏳ Testing and refinement (Planned)
+- **Phase 7**: ⏳ Documentation and deployment instructions (Planned)
 
 ## What's Next
 
-We're currently working on Phase 3, which includes:
-- Integration with Claude on Amazon Bedrock for AI-assisted learning
-- Interactive Q&A capabilities based on study materials
-- Contextual assistance for labs and exercises
+We're currently working on Phase 4, which includes:
+- Separating frontend and backend architecture
+- Implementing CloudScape design system for the frontend
+- RESTful API backend for the multi-agent system
+- Enhanced user experience with modern UI components
 
 ## Repository Structure
 

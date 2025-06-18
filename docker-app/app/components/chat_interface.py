@@ -1,109 +1,219 @@
 """
 Chat Interface Component for AWS Data Engineer Course
 
-This module implements a Streamlit-based chat interface for interacting with the multi-agent system.
+This module implements the Streamlit chat interface for interacting with the multi-agent system.
 """
 
 import streamlit as st
-from typing import Callable, Optional
+from typing import List, Dict, Any
+from app.agents import get_coordinator
+from app.config import BEDROCK_MODEL_ID
 
-def initialize_chat_state():
-    """Initialize the chat state in the session state if it doesn't exist."""
+
+def initialize_chat():
+    """Initialize chat-related session state variables."""
     if "messages" not in st.session_state:
         st.session_state.messages = []
     
-    if "chat_placeholder" not in st.session_state:
-        st.session_state.chat_placeholder = None
+    if "coordinator" not in st.session_state:
+        try:
+            st.session_state.coordinator = get_coordinator(BEDROCK_MODEL_ID)
+        except Exception as e:
+            st.error(f"Failed to initialize AI assistant: {str(e)}")
+            st.session_state.coordinator = None
 
-def display_chat_messages():
-    """Display all messages in the chat history."""
+
+def display_chat_interface():
+    """Display the main chat interface."""
+    st.subheader("🤖 AI Assistant")
+    st.markdown("Ask questions about AWS data engineering concepts, get study guidance, or request help with labs.")
+    
+    # Initialize chat
+    initialize_chat()
+    
+    # Display chat messages
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
+    
+    # Chat input
+    if prompt := st.chat_input("Ask me anything about AWS data engineering..."):
+        # Add user message to chat history
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        
+        # Display user message
+        with st.chat_message("user"):
+            st.markdown(prompt)
+        
+        # Generate and display assistant response
+        with st.chat_message("assistant"):
+            if st.session_state.coordinator:
+                try:
+                    with st.spinner("Thinking..."):
+                        # Get context from recent messages
+                        context = get_conversation_context()
+                        response = st.session_state.coordinator.route_question(prompt, context)
+                    
+                    st.markdown(response)
+                    
+                    # Add assistant response to chat history
+                    st.session_state.messages.append({"role": "assistant", "content": response})
+                    
+                except Exception as e:
+                    error_msg = f"Sorry, I encountered an error: {str(e)}"
+                    st.error(error_msg)
+                    st.session_state.messages.append({"role": "assistant", "content": error_msg})
+            else:
+                error_msg = "AI assistant is not available. Please check your AWS configuration."
+                st.error(error_msg)
+                st.session_state.messages.append({"role": "assistant", "content": error_msg})
 
-def add_user_message(message: str):
-    """Add a user message to the chat history."""
-    st.session_state.messages.append({"role": "user", "content": message})
-    with st.chat_message("user"):
-        st.markdown(message)
 
-def add_assistant_message(message: str):
-    """Add an assistant message to the chat history."""
-    st.session_state.messages.append({"role": "assistant", "content": message})
-    with st.chat_message("assistant"):
-        st.markdown(message)
+def display_chat_sidebar():
+    """Display chat-related controls in the sidebar."""
+    with st.sidebar:
+        st.markdown("---")
+        st.subheader("💬 AI Assistant")
+        
+        # Show agent capabilities
+        if st.button("Show Agent Capabilities", use_container_width=True):
+            show_agent_capabilities()
+        
+        # Clear chat history
+        if st.button("Clear Chat History", use_container_width=True):
+            st.session_state.messages = []
+            st.rerun()
+        
+        # Chat statistics
+        if "messages" in st.session_state and st.session_state.messages:
+            total_messages = len(st.session_state.messages)
+            user_messages = len([m for m in st.session_state.messages if m["role"] == "user"])
+            st.caption(f"💬 {user_messages} questions asked")
 
-def chat_interface(process_message_func: Callable[[str], str], placeholder: Optional[st.empty] = None):
+
+def show_agent_capabilities():
+    """Display information about agent capabilities."""
+    st.subheader("🤖 AI Assistant Capabilities")
+    
+    if st.session_state.coordinator:
+        capabilities = st.session_state.coordinator.get_agent_capabilities()
+        
+        for agent_name, agent_capabilities in capabilities.items():
+            with st.expander(f"**{agent_name} Agent**"):
+                for capability in agent_capabilities:
+                    st.write(f"• {capability}")
+    else:
+        st.error("AI assistant not available")
+
+
+def get_conversation_context(max_messages: int = 4) -> str:
     """
-    Render a chat interface that processes user input with the provided function.
+    Get recent conversation context for the AI assistant.
     
     Args:
-        process_message_func: Function that takes a user message and returns an assistant response
-        placeholder: Optional streamlit placeholder for the chat interface
-    """
-    # Initialize chat state
-    initialize_chat_state()
-    
-    # Use provided placeholder or create a new one
-    if placeholder:
-        st.session_state.chat_placeholder = placeholder
-    elif not st.session_state.chat_placeholder:
-        st.session_state.chat_placeholder = st.empty()
-    
-    # Display existing chat messages
-    with st.session_state.chat_placeholder.container():
-        display_chat_messages()
+        max_messages: Maximum number of recent messages to include
         
-        # Get user input
-        if prompt := st.chat_input("Ask about AWS data engineering..."):
-            # Add user message to chat history
-            add_user_message(prompt)
-            
-            # Process the message and get a response
-            with st.spinner("Thinking..."):
-                response = process_message_func(prompt)
-            
-            # Add assistant response to chat history
-            add_assistant_message(response)
-
-def streaming_chat_interface(process_message_stream_func: Callable[[str], str], placeholder: Optional[st.empty] = None):
+    Returns:
+        Formatted conversation context
     """
-    Render a chat interface with streaming responses.
+    if "messages" not in st.session_state or not st.session_state.messages:
+        return ""
+    
+    # Get recent messages
+    recent_messages = st.session_state.messages[-max_messages:]
+    
+    context_parts = []
+    for message in recent_messages:
+        role = message["role"]
+        content = message["content"]
+        context_parts.append(f"{role.title()}: {content}")
+    
+    return "\n".join(context_parts)
+
+
+def display_quick_actions():
+    """Display quick action buttons for common questions."""
+    st.subheader("🚀 Quick Actions")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("📊 Show My Progress", use_container_width=True):
+            add_quick_question("Show me my current progress through the course")
+        
+        if st.button("💡 Get Recommendations", use_container_width=True):
+            add_quick_question("What should I study next based on my progress?")
+    
+    with col2:
+        if st.button("📚 Explain AWS Glue", use_container_width=True):
+            add_quick_question("Explain AWS Glue and its key features for data engineering")
+        
+        if st.button("🏗️ Data Lake Architecture", use_container_width=True):
+            add_quick_question("What are the best practices for designing a data lake architecture on AWS?")
+
+
+def add_quick_question(question: str):
+    """
+    Add a quick question to the chat and process it.
     
     Args:
-        process_message_stream_func: Function that takes a user message and yields response chunks
-        placeholder: Optional streamlit placeholder for the chat interface
+        question: The question to add and process
     """
-    # Initialize chat state
-    initialize_chat_state()
+    # Initialize chat if needed
+    initialize_chat()
     
-    # Use provided placeholder or create a new one
-    if placeholder:
-        st.session_state.chat_placeholder = placeholder
-    elif not st.session_state.chat_placeholder:
-        st.session_state.chat_placeholder = st.empty()
+    # Add user message
+    st.session_state.messages.append({"role": "user", "content": question})
     
-    # Display existing chat messages
-    with st.session_state.chat_placeholder.container():
-        display_chat_messages()
+    # Process the question
+    if st.session_state.coordinator:
+        try:
+            context = get_conversation_context()
+            response = st.session_state.coordinator.route_question(question, context)
+            st.session_state.messages.append({"role": "assistant", "content": response})
+        except Exception as e:
+            error_msg = f"Error processing question: {str(e)}"
+            st.session_state.messages.append({"role": "assistant", "content": error_msg})
+    
+    # Rerun to show the new messages
+    st.rerun()
+
+
+def display_chat_page():
+    """Display a dedicated chat page."""
+    st.title("🤖 AI Assistant Chat")
+    
+    # Quick actions at the top
+    display_quick_actions()
+    
+    st.markdown("---")
+    
+    # Main chat interface
+    display_chat_interface()
+    
+    # Sidebar controls
+    display_chat_sidebar()
+
+
+def display_embedded_chat():
+    """Display a compact chat interface for embedding in other pages."""
+    with st.expander("🤖 Ask AI Assistant", expanded=False):
+        st.markdown("Get instant help with AWS data engineering concepts!")
         
-        # Get user input
-        if prompt := st.chat_input("Ask about AWS data engineering..."):
-            # Add user message to chat history
-            add_user_message(prompt)
-            
-            # Create a placeholder for the assistant's response
-            with st.chat_message("assistant"):
-                response_placeholder = st.empty()
-                full_response = ""
+        # Simple chat input
+        if prompt := st.text_input("Your question:", key="embedded_chat"):
+            if st.button("Ask", key="embedded_ask"):
+                initialize_chat()
                 
-                # Process the message and stream the response
-                for response_chunk in process_message_stream_func(prompt):
-                    full_response += response_chunk
-                    response_placeholder.markdown(full_response + "▌")
-                
-                # Update with the final response
-                response_placeholder.markdown(full_response)
-            
-            # Add the complete assistant response to chat history
-            st.session_state.messages.append({"role": "assistant", "content": full_response})
+                if st.session_state.coordinator:
+                    try:
+                        with st.spinner("Getting answer..."):
+                            response = st.session_state.coordinator.route_question(prompt)
+                        
+                        st.success("**Answer:**")
+                        st.markdown(response)
+                        
+                    except Exception as e:
+                        st.error(f"Error: {str(e)}")
+                else:
+                    st.error("AI assistant not available")

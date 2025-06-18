@@ -154,18 +154,19 @@ The agents use specialized tools to enhance their capabilities:
 - **Navigation**: Easy access to all content through the sidebar
 - **Progress Tracking**: Track your progress through the course
 - **Progress Dashboard**: Visualize your progress and continue where you left off
-- **Multi-Agent AI Assistant**: Specialized AI agents for different AWS data engineering domains (coming in Phase 3)
+- **Multi-Agent AI Assistant**: Specialized AI agents for different AWS data engineering domains with Claude integration
 
 ## Development Phases
 
 This application is being developed in phases:
 
 - **Phase 1**: ✅ Basic setup with Docker and content navigation
-- **Phase 2**: ✅ Core Streamlit app with progress tracking
-- **Phase 3**: 🔄 Multi-agent Claude integration using Strands Agents (In Progress)
-- **Phase 4**: ⏳ Interactive lab features (Planned)
-- **Phase 5**: ⏳ Testing and refinement (Planned)
-- **Phase 6**: ⏳ Documentation and deployment instructions (Planned)
+- **Phase 2**: ✅ Core Streamlit app with progress tracking and multi-agent system
+- **Phase 3**: ✅ Multi-agent Claude integration using Strands Agents (Completed)
+- **Phase 4**: 🔄 Frontend/Backend separation with CloudScape UI (In Progress)
+- **Phase 5**: ⏳ Interactive lab features (Planned)
+- **Phase 6**: ⏳ Testing and refinement (Planned)
+- **Phase 7**: ⏳ Documentation and deployment instructions (Planned)
 
 ## AWS Credentials Configuration
 

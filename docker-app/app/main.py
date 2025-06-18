@@ -4,6 +4,7 @@ import sys
 from app.config import DOMAINS, LABS, STUDY_GUIDE_PATH, LABS_PATH
 from app.utils.progress_tracker import ProgressTracker
 from app.components.progress_display import display_progress_sidebar, display_section_progress
+from app.components.chat_interface import display_embedded_chat, display_chat_sidebar
 
 # Set page configuration
 st.set_page_config(
@@ -32,6 +33,9 @@ def sidebar_navigation():
             
         if st.button("Progress Dashboard", use_container_width=True):
             st.switch_page("pages/dashboard.py")
+            
+        if st.button("🤖 AI Assistant Chat", use_container_width=True):
+            st.switch_page("pages/chat.py")
             
         st.subheader("Study Guide")
         if st.button("Introduction", use_container_width=True):
@@ -83,6 +87,9 @@ def sidebar_navigation():
         
         # Display progress information
         display_progress_sidebar(tracker, DOMAINS, LABS)
+        
+        # Display chat sidebar
+        display_chat_sidebar()
 
 # Render markdown content
 def render_markdown(file_path):
@@ -138,6 +145,9 @@ def main_content():
         
         Good luck with your AWS Certified Data Engineer - Associate exam preparation!
         """)
+        
+        # Add embedded chat interface
+        display_embedded_chat()
         
         # Last visited section
         last_section_type, last_section_id = tracker.get_last_visited()

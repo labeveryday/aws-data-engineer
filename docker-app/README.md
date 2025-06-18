@@ -2,6 +2,52 @@
 
 An interactive Streamlit application for AWS Certified Data Engineer - Associate exam preparation.
 
+## Multi-Agent Architecture
+
+```mermaid
+graph TD
+    User[User] <--> StreamlitUI[Streamlit UI]
+    StreamlitUI <--> Coordinator[Coordinator Agent]
+    
+    Coordinator --> IngestAgent[Data Ingestion Agent]
+    Coordinator --> StorageAgent[Data Storage Agent]
+    Coordinator --> SecurityAgent[Data Security Agent]
+    Coordinator --> OpsAgent[Operations Agent]
+    
+    IngestAgent --> ContentTools[Content Tools]
+    StorageAgent --> ContentTools
+    SecurityAgent --> ContentTools
+    OpsAgent --> ContentTools
+    
+    IngestAgent --> AWSTools[AWS Documentation Tools]
+    StorageAgent --> AWSTools
+    SecurityAgent --> AWSTools
+    OpsAgent --> AWSTools
+    
+    Coordinator --> ProgressTools[Progress Tracking Tools]
+    
+    subgraph "Specialist Agents"
+        IngestAgent
+        StorageAgent
+        SecurityAgent
+        OpsAgent
+    end
+    
+    subgraph "Custom Tools"
+        ContentTools
+        AWSTools
+        ProgressTools
+    end
+    
+    classDef primary fill:#f9f,stroke:#333,stroke-width:2px
+    classDef secondary fill:#bbf,stroke:#333,stroke-width:1px
+    classDef tools fill:#bfb,stroke:#333,stroke-width:1px
+    
+    class Coordinator primary
+    class IngestAgent,StorageAgent,SecurityAgent,OpsAgent secondary
+    class ContentTools,AWSTools,ProgressTools tools
+```
+
 ## Local Development with Docker
 
 ### Prerequisites
@@ -52,6 +98,54 @@ docker-app/
 ├── requirements.txt      # Python dependencies
 └── README.md             # This file
 ```
+
+## Multi-Agent System
+
+The application uses a multi-agent collaboration system built with Strands Agents to provide specialized assistance for AWS Data Engineer certification preparation:
+
+### Agent Roles
+
+1. **Coordinator Agent**: 
+   - Main interface for user interactions
+   - Routes questions to appropriate specialist agents
+   - Synthesizes responses from multiple agents
+   - Maintains conversation context
+
+2. **Data Ingestion Agent**:
+   - Specializes in AWS data ingestion services
+   - Expert on Kinesis, Glue, DMS, and related technologies
+   - Provides guidance on data collection and import strategies
+
+3. **Data Storage Agent**:
+   - Focuses on AWS storage solutions
+   - Expert on S3, Redshift, DynamoDB, and related services
+   - Advises on data organization and storage optimization
+
+4. **Data Security Agent**:
+   - Specializes in AWS data security and governance
+   - Expert on IAM, Lake Formation, KMS, and security best practices
+   - Provides guidance on securing data assets
+
+5. **Operations Agent**:
+   - Focuses on monitoring, management, and optimization
+   - Expert on CloudWatch, Step Functions, and operational excellence
+   - Advises on pipeline orchestration and cost optimization
+
+### Custom Tools
+
+The agents use specialized tools to enhance their capabilities:
+
+1. **Content Tools**: Access and retrieve information from study materials
+2. **AWS Documentation Tools**: Fetch relevant AWS documentation
+3. **Progress Tracking Tools**: Monitor and update user progress
+
+### Interaction Flow
+
+1. User submits a question through the Streamlit interface
+2. Coordinator agent analyzes the question and determines which specialist(s) to consult
+3. Relevant specialist agents process the question using their domain expertise
+4. Coordinator synthesizes a comprehensive response
+5. Response is presented to the user through the chat interface
 
 ## Features
 

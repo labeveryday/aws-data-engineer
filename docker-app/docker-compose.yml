@@ -8,6 +8,7 @@ services:
       - ./app:/app/app
       - ../study-guide:/app/content/study-guide
       - ../labs:/app/content/labs
+      - ~/.aws:/root/.aws:ro  # Mount AWS credentials as read-only
     environment:
       - AWS_PROFILE=default
-      - BEDROCK_REGION=us-east-1
+      - BEDROCK_REGION=us-west-2  # Region where Claude models are available
